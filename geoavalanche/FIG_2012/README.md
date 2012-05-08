@@ -1,4 +1,4 @@
-FIG 2012 presentation
+FIG 2012 presentation in the Risk Management session
 
 CC-BY-SA 3.0 licensed
 

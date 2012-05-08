@@ -3,55 +3,61 @@
 <plist version="1.0">
 <dict>
 	<key>currentDocument</key>
-	<string>Development/slideshow/geoavalanche/FIG_2012/LICENSE</string>
+	<string>geoavalanche/FIG_2012/geoavalanche.html</string>
 	<key>documents</key>
 	<array>
 		<dict>
 			<key>filename</key>
 			<string>.gitignore</string>
 			<key>lastUsed</key>
-			<date>2012-04-15T14:13:46Z</date>
+			<date>2012-05-05T16:29:27Z</date>
 		</dict>
 		<dict>
 			<key>filename</key>
 			<string>geoavalanche/FIG_2012/LICENSE</string>
 			<key>lastUsed</key>
-			<date>2012-04-15T17:30:19Z</date>
-			<key>selected</key>
-			<true/>
+			<date>2012-05-05T16:28:50Z</date>
 		</dict>
 		<dict>
 			<key>filename</key>
 			<string>geoavalanche/FIG_2012/README.md</string>
 			<key>lastUsed</key>
-			<date>2012-04-15T17:30:19Z</date>
+			<date>2012-05-07T17:54:08Z</date>
+		</dict>
+		<dict>
+			<key>filename</key>
+			<string>geoavalanche/FIG_2012/css/main.css</string>
+			<key>lastUsed</key>
+			<date>2012-05-07T15:19:58Z</date>
 		</dict>
 		<dict>
 			<key>filename</key>
 			<string>geoavalanche/FIG_2012/geoavalanche.html</string>
 			<key>lastUsed</key>
-			<date>2012-04-15T17:18:24Z</date>
+			<date>2012-05-07T17:54:08Z</date>
+			<key>selected</key>
+			<true/>
 		</dict>
 	</array>
 	<key>fileHierarchyDrawerWidth</key>
 	<integer>200</integer>
 	<key>metaData</key>
 	<dict>
-		<key>Development/slideshow/.gitignore</key>
+		<key>.gitignore</key>
 		<dict>
 			<key>caret</key>
 			<dict>
 				<key>column</key>
-				<integer>4</integer>
+				<integer>7</integer>
 				<key>line</key>
-				<integer>1</integer>
+				<integer>2</integer>
 			</dict>
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>
 			<key>firstVisibleLine</key>
 			<integer>0</integer>
 		</dict>
-		<key>Development/slideshow/geoavalanche/FIG_2012/LICENSE</key>
+		<key>geoavalanche/FIG_2012/LICENSE</key>
 		<dict>
 			<key>caret</key>
 			<dict>
@@ -61,45 +67,60 @@
 				<integer>58</integer>
 			</dict>
 			<key>firstVisibleColumn</key>
-			<integer>0</integer>
+			<integer>556</integer>
 			<key>firstVisibleLine</key>
-			<integer>0</integer>
+			<integer>42</integer>
 		</dict>
-		<key>Development/slideshow/geoavalanche/FIG_2012/README.md</key>
+		<key>geoavalanche/FIG_2012/README.md</key>
 		<dict>
 			<key>caret</key>
 			<dict>
 				<key>column</key>
-				<integer>21</integer>
+				<integer>52</integer>
 				<key>line</key>
-				<integer>4</integer>
+				<integer>0</integer>
 			</dict>
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>
 			<key>firstVisibleLine</key>
 			<integer>0</integer>
 		</dict>
-		<key>Development/slideshow/geoavalanche/FIG_2012/geoavalanche.html</key>
+		<key>geoavalanche/FIG_2012/css/main.css</key>
 		<dict>
 			<key>caret</key>
 			<dict>
 				<key>column</key>
-				<integer>44</integer>
+				<integer>0</integer>
 				<key>line</key>
-				<integer>51</integer>
+				<integer>187</integer>
 			</dict>
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>
 			<key>firstVisibleLine</key>
-			<integer>69</integer>
+			<integer>157</integer>
+		</dict>
+		<key>geoavalanche/FIG_2012/geoavalanche.html</key>
+		<dict>
+			<key>caret</key>
+			<dict>
+				<key>column</key>
+				<integer>102</integer>
+				<key>line</key>
+				<integer>255</integer>
+			</dict>
+			<key>firstVisibleColumn</key>
+			<integer>108</integer>
+			<key>firstVisibleLine</key>
+			<integer>243</integer>
 		</dict>
 	</dict>
 	<key>openDocuments</key>
 	<array>
-		<string>Development/slideshow/geoavalanche/FIG_2012/geoavalanche.html</string>
-		<string>Development/slideshow/geoavalanche/FIG_2012/README.md</string>
-		<string>Development/slideshow/geoavalanche/FIG_2012/LICENSE</string>
-		<string>Development/slideshow/.gitignore</string>
+		<string>geoavalanche/FIG_2012/geoavalanche.html</string>
+		<string>geoavalanche/FIG_2012/README.md</string>
+		<string>geoavalanche/FIG_2012/LICENSE</string>
+		<string>.gitignore</string>
+		<string>geoavalanche/FIG_2012/css/main.css</string>
 	</array>
 	<key>showFileHierarchyDrawer</key>
 	<false/>

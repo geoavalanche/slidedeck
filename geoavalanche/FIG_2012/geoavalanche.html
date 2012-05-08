@@ -29,6 +29,12 @@
 				<section>
 					<h1>GeoAvalanche</h1>
 					<h3 class="inverted">A Spatial Data Infrastructure for avalanche awareness warning</h3>
+					<p>
+						<i><small>Geoavalanche project / <a href="http://twitter.com/geoavalanche">@geoavalanche</a><a href="http://geoavalanche.org" class="image"></small></i>
+					</p>
+					<p>
+							<i><small><img width="350" height="90" src="images/GA_Orizz.png"></a></small></i> 
+					</p>
 					<script>
 						// Delicously hacky. Look away.
 						if( navigator.userAgent.match( /(iPhone|iPad|iPod|Android)/i ) )
@@ -37,22 +43,371 @@
 				</section>
 				
 				<section>
-					<h2>Aims</h2>
+					<h2>Agenda</h2>
+					<ul>
+						<p><li>Snow avalanche risk management</li></p> 
+						<p><li>What is <strong>Geoavalanche</strong>?</li></p>
+						<p><li>CAAML application profile</li></p>
+						<p><li><strong>Geoavalanche</strong> Server</li></p>
+						<p><li>Benefits</li></p>
+						<p><li>Changelles</li></p>
+					</ul>
+				</section>
+				
+				<!-- Slide of Geoavalanche paper -->
+				<section>
+					<section>
+						<h2>Mountain Risk Management</h2>
+						<p>
+							<ul>
+								<p> 
+									<li><h4>Avalanches</h4><p class="fragment">dramatically:</p> 
+										<ol>
+									  		<li class="fragment"><em><strong>kill backcountry practitioners</strong></em></li>
+											<li class="fragment"><em><strong>damage villages, settlements, infrastructure</strong></em></li>
+										</ol>
+							    	</li>
+ 								</p>
+								<p>
+									<li><h4>Snow cover</h4><p class="fragment">frequently:</p> 
+										<ol>
+									  		<li class="fragment"><em><strong>affects hydropower generation</strong></em></li>
+											<li class="fragment"><em><strong>is a source of water for drinkable and irrigation use</strong></em></li>
+										</ol>
+							    	</li>
+								</p>
+							</ul>
+						</p>
+				    </section>
+					<section>
+						<h2>Actors</h2>
+						<p>
+							<ul>
+								<p> 
+									<li><h4>Avalanche Warning Services</h4> 
+										<ol>
+									  		<li class="fragment">distributed offices collect avalanche and meteorological data locally</li>
+											<li class="fragment">issue nationwide nowcasting and forecasting bulletin centrally</li>
+										</ol>
+							    	</li>
+ 								</p>
+								<p>
+									<li><h4>Governments</h4> 
+										<ol>
+									  		<li class="fragment"><strong>has</strong> to mitigate natural hazard and regulate land use</li>
+											<li class="fragment"><strong>deal with</strong> the management of resources</li>
+											<li class="fragment">are approaching to <em><strong><a href="http://inspire.jrc.ec.europa.eu/index.cfm/pageid/2/list/7">Inspire</a></strong></em> where Avalanches are issued in the <cite>Natural Risk Zones</cite> theme of Annex III</li>
+										</ol>
+							    	</li>
+								</p>
+							</ul>
+						</p>
+				    </section>
+					<section>
+						<h2>Users</h2>
+						<p>
+							<ul>
+								<p> 
+									<li><h4>Tourists</h4> 
+										<ol>
+									  		<li class="fragment">attempt in the wilderness with a number as much as increased in the latest years</li>
+											<li class="fragment">claim innovative early warning alert systems and more avalanche awareness for safer activities</li>
+										</ol>
+							    	</li>
+ 								</p>
+								<p> 
+									<li><h4>Mountain Professionists</h4> 
+										<ol>
+									  		<li class="fragment">plan their activities more often via mobile devices</li>
+											<li class="fragment">promote and make their business on the safety of outdoor activities</li>
+											<li class="fragment">are actively involved to report snowdrift risk and snowslide-prone area as the situation evolves</li>
+										</ol>
+							    	</li>
+ 								</p>
+							</ul>
+						</p>
+				    </section>
+				</section>
+				
+				<section>
+					<h2>Geoavalanche</h2>
+					<ul>
+						<li>Open Source project born from <a href="http://www.geobeyond.it">Geobeyond</a> and licensed under the GNU GPL v3 terms</li>
+						<li>Development of a web architecture to deal with snow avalanche datasets over the Internet</li>
+						<li>Overcome the lack of shared knowledge on snow avalanche information</li>
+						<li>Core component of data infrastructure spatially and semantically focused</li>
+						<li>Web 2.0 oriented</li>
+					</ul>
+				</section>
+				
+				<section>
+					<h2>Goals</h2>
 					<p>
-						Exchange of snow avalanche information in a common standard for building <strong>Spatial Data
-						Infrastructure</strong> to cross-boarder interoperability. 				     	    
+						<q cite="">Exchange of snow avalanche information in a common standard for building <strong>Spatial Data
+						Infrastructure</strong> to cross-boarder interoperability.</q>
 					</p>
 					<p>
-						Mountaineers need innovative early warning alert systems and more awareness for safer activities.
+						<q cite="">Leverage of more avalanche awareness to mountaineers by using user-oriented services on Web
+						channels.</q> 						  
 					</p>
 					<p>
-						<i><small>Geoavalanche project / <a href="http://twitter.com/geoavalanche">@geoavalanche</a><a href="http://geoavalanche.org" class="image"></small></i>
-					</p>
-					<p>
-							<i><small><img width="600" height="150" src="images/GA_Orizz.png"></a></small></i> 
+						<q cite="">Make avalanche bulletin mostly available and hence mountain experience safe-effective.</q>
 					</p>
 				</section>
 				
+				<section>
+					<h2>Key concepts</h2>
+					<ul>
+						<li>Geographical nature of snow avalanche data (spatial component)</li>
+						<li>Geospatial standards</li>
+						<li>Cross-boarder cooperation and harmonisation of data (Regional - National - European)</li>
+						<li>Interoperability in mind</li>
+					</ul>
+				</section>
+				
+				<section>
+					<h2>Technologies</h2>
+					<ul>
+						<li>Canadian Avalanche Association Markup Language <a href="http://caaml.org">CAAML</a></li>
+						<li>Geographic Markup Language <a href="http://www.opengeospatial.org/standards/gml">GML</a></li>
+						<li>Web Feature Service <a href="http://www.opengeospatial.org/standards/wfs">WFS</a> standard specification from OGC</li>
+						<li>Web Mapping Service standard <a href="http://www.opengeospatial.org/standards/wms">WMS</a> specification from OGC</li>
+						<li><a href="http://geoserver.org">GeoServer</a> and GML Application Schema extension</li>
+						<li><a href="http://postgis.refractions.net/">PostGIS</a> spatial database</li>
+					</ul>
+				</section>
+				
+				<section>
+					<h2>Implications</h2>
+					<ul>
+						<p>
+							<li>Accessing datasets by using WFS services for exchanging data on R/W operations</li>
+						</p>
+						<p>
+							<li>Providing maps of avalanche bulletins and snow cover by using WMS services</li> 
+						</p>
+						<p>
+							<li>Enabling Third-party internet sites and mobile devices for snow avalanche geolocalisation services</li> 
+						</p>
+					</ul>
+				</section>
+				
+				<section>
+					<section>
+						<h2>CAAML</h2>
+						<ul>
+							<p>
+								<li>XML grammar language initially developed and still maintained by the Canadian Avalanche Associations <a href="http://www.avalanche.ca">CAA</a></li>
+							</p>
+							<p>
+								<li>Common encoding structure based on top of GML</li> 
+							</p>
+							<p>
+								<li>Currently supports the following types:</li>
+								<ol>
+							  		<li class="fragment">Avalanche incident information</li>
+									<li class="fragment">Avalanche activity comments</li>
+									<li class="fragment">Avalanche observations</li>
+									<li class="fragment">Avalanche bulletins</li>
+									<li class="fragment">Avalanche closures</li>
+									<li class="fragment">Observations on the field</li>
+									<li class="fragment">Snowpack structure comments</li>
+									<li class="fragment">Snow profile observations</li>
+									<li class="fragment">Weather observations</li>
+								</ol>
+							</p>
+						</ul>
+					</section>
+					<section>
+						<h2>CAAML architecture</h2>
+						<p>
+						    Latest version 5.0 developed by <a href="http://caaml.org">CAA</a>
+						</p>
+						<a href="#/8/1" class="image">
+							<img width="800" height="500" src="images/fileStructure.jpeg">
+						</a>
+				    </section>
+					<section>
+						<h2>Similar Features</h2>
+						<ul>
+							<p>
+								<li><em><strong>Object-Property-Value </em></strong>model pattern of GML</li>
+							</p>
+							<p>
+								<li>Same flexibility in mind</li> 
+							</p>
+							<p>
+								<li>Borrows the concept of profile which permits:</li>
+								<ol>
+							  		<li class="fragment">express logical limitation of elements relevant for a specific application</li>
+									<li class="fragment">maintain the ability to be validated against the overall CAAML standard</li>
+									<li class="fragment">design a common schema which raises the needs among AWS in the neighbohood of European mountains</li>
+								</ol>
+							</p>
+						</ul>
+					</section>
+				</section>
+				
+				<section>
+					<section>
+						<h2>EAWS CAAML profile</h2>
+						<ul>
+							<p>
+								<li><a href="http://www.avalanches.org">EAWS</a> European Avalanche Warning Service maintains standards across the Alps</li>
+							</p>
+							<p>
+								<li>Proposed <a href="http://caaml.org/Schemas/V5.0/Profiles/BulletinEAWS/CAAMLv5_BulletinEAWS.xsd">schema</a> profile for the Alps</li> 
+							</p>
+							<p>
+								<li>Geoavalanche uses EAWS CAAML-scoped avalanche bulletins</li>
+							</p>
+						</ul>
+					</section>
+					<!-- ↓ Section ↓
+					<section data-state="alert">
+						<h2>Bulletin Element snippet</h2>
+						<pre><code>
+		 <element name="Bulletin" type="caaml:BulletinType"/>
+		 <complexType name="BulletinType" final="#all">
+		 	<sequence>
+		 		<element name="metaDataProperty">
+		 			<complexType>
+		 				<sequence>
+		 					<element name="MetaData" type="caaml:ObsMetaDataType"/>
+		 				</sequence>
+		 			</complexType>
+		 		</element>
+		 		<element ref="caaml:validTime"/>
+		 		<element name="bulletinResultsOf">
+		 			<complexType>
+		 				<sequence>
+		 					<element ref="caaml:BulletinMeasurements"/>
+		 				</sequence>
+		 			</complexType>
+		 		</element>
+		 		<element ref="caaml:locRef"/>
+		 	</sequence>
+		 	<attribute ref="gml:id" use="required"/>
+		 </complexType>
+						</code></pre>
+						<p>Courtesy of <a href="http://caaml.org">Canadian Avalanche Association</a></p>
+					</section>
+				    ↥ END Section ↥ -->
+					<section data-state="alert">
+						<h2>Bulletin Element Type</h2>
+						<a href="#/9/2" class="image">
+							<img width="800" height="400" src="images/snippet.jpeg">
+						</a>
+						<p>Courtesy of <a href="http://caaml.org">Canadian Avalanche Association</a></p>
+				    </section>
+				</section>
+				
+				<section>
+					<h2>European Avalanche Danger scale</h2>
+					<a href="#/10" class="image">
+						<img width="950" height="600" src="images/scale_en.jpeg">
+					</a>
+			    </section>
+			
+				<section>
+					<section>
+						<h2>Geoavalanche Server</h2>
+						<ul>
+							<p>
+								<li>Uses <em><strong><a href="http://geoserver.org">GeoServer</a></em></strong> to aggregate different datastores centrally</li>
+							</p>
+							<p>
+								<li>Includes GML application schema extension for supporting 3th-party like CAAML</li> 
+							</p>
+							<p>
+								<li>Allows direct querying of complex snow avalanche features encoded by CAAML</li>
+							</p>
+							<p>
+								<li>Enables data fusion between remote and local sources</li>
+							</p>
+							<p>
+								<li>Achieves web mapping service for avalanche bulletins</li>
+							</p>
+							<p>
+								<li>is <em><strong>INSPIRE-ready</em></strong> because of the abilities passed-down by GeoServer </li>
+							</p>
+						</ul>
+					</section>
+					<section>
+						<h2>Geospatial snow avalanche services</h2>
+						<a href="#/11/1" class="image">
+							<img width="700" height="550" src="images/geoaval.png">
+						</a>
+				    </section>
+					<section>
+						<h2>CAAML schema mapping</h2>
+						<p>
+							Single <code><strong>caaml:Bulletin</strong></code>:
+							<ul>
+								<p>
+									<li>is observed at several distinct locations on the Earth’s surface</li> 
+								</p>
+								<p>
+									<li>has a multivalued <code><strong>caaml:bulletinResultsOf</strong></code> property of <code><strong>caaml:BulletinMeasurements</strong></code> type</li>
+								</p>
+							</ul>
+						</p>
+						
+						<a href="#/11/2" class="image">
+							<img width="800" height="250" src="images/mapping.png">
+						</a>
+				    </section>
+				</section>
+				
+				<section>
+					<h2>Key effects</h2>
+					<blockquote cite="">
+						A CAAML data infrastructure would leverage Geoavalanche server that becomes a key role since it manages both of reading and writing operations regardless of the database schema used to store the data.
+					</blockquote>
+					<blockquote cite="">
+						When performing WFS filter queries it can also act accordingly to OGC WFS-T transactional specification because each single service has been conformed to the same CAAML application schema.
+					</blockquote>
+				</section>
+				
+				<section>
+					<h2>Snow avalanche SDI for cross-border interoperability</h2>
+					<a href="#/13" class="image">
+						<img width="620" height="520" src="images/sdi.png">
+					</a>
+			    </section>
+				
+				<section data-state="alert">
+					<h2>Benefits</h2>
+					<p>
+						<ul>
+							<li class="fragment"><em><strong>Interoperability at largest scale for stakeholders, actors and users</strong></em></li>
+							<li class="fragment"><em><strong>European - Snow avalanche Geoportal for EU, which would represent the effect of Natural Risk zones within INSPIRE</strong></em></li>
+							<li class="fragment"><em><strong>Nationally - Geospatial product which provides avalanche bulletin maps, warning LBS to mobile users and a complement for Resource Management (Snow water equivalent)</strong></em></li>
+							<li class="fragment"><em><strong>Regionally - A bridge to connect distributed observation centers to national agencies AWS in an easily common format</strong></em></li>
+						</ul>
+					</p>
+			    </section>
+			
+				<section>
+					<h2>Challenges</h2>
+					<ul>
+						<p>
+							<li>Schema transformation for CAAML datasets to comply with the "Natural Risk Zones" data theme</li>
+						</p>
+						<p>
+							<li>Robustness and scalability of snow avalanche database for CAAML</li> 
+						</p>
+						<p>
+							<li>Catalogue Service for the Web (CSW)</li>
+						</p>
+						<p>
+							<li>Implementation of map visualization services INSPIRE conformed (WMS 1.3)</li>
+						</p>
+						<p>
+							<li>Develop of mobile LBS client (iOS, Android)</li>
+						</p>
+					</ul>
+				</section>
 				<!-- Example of nested vertical slides -->
 				<section>
 					<section>
@@ -216,17 +571,20 @@
 				</section>
 				
 				<section>
-					<h2>Stellar Links</h2>
+					<h2>More on GeoAvalanche</h2>
 					<ul>
-						<li><a href="https://github.com/hakimel/reveal.js">Source code on github</a></li>
-						<li><a href="http://hakim.se/projects/reveal-js">Read more on my site</a></li>
-						<li><a href="http://twitter.com/hakimel">Follow me on Twitter</a></li>
+						<li><a href="https://github.com/geoavalanche/Geoavalanche">Source code on github</a></li>
+						<li><a href="http://geoavalanche.org">Read more on the project site</a></li>
+						<li><a href="http://twitter.com/francbartoli">Follow me on Twitter</a></li>
 					</ul>
 				</section>
 				
-				<section>
-					<h1>THE END</h1>
-					<h3 class="inverted">BY Hakim El Hattab / hakim.se</h3>
+				<section data-state="soothe">
+					<h1>Questions?</h1>
+					<h3 class="inverted">BY Francesco Bartoli <a href="mailto:francesco.bartoli@geobeyond.it"> francesco.bartoli@geobeyond.it<a></h3>
+					<a class="image" href="http://www.geobeyond.it" target="_blank">
+						<img width="200" height="200" src="images/quadrato.png">
+					</a>
 				</section>
 			</div>
 

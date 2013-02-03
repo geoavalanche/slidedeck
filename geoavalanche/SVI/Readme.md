@@ -4,6 +4,6 @@
 
 CC-BY-SA 3.0
 
-Copyright (C) 2013 Geobeyond, http://geobeyond.it
+Copyright (C) 2013 Geobeyond Srl, http://www.geobeyond.it
 
-Live presentation available at [file:///Users/geobart/Development/slideshow/geoavalanche/SVI/GeoAvalanche.html#/overview](file:///Users/geobart/Development/slideshow/geoavalanche/SVI/GeoAvalanche.html#/overview)
+Live presentation available at [http://geoavalanche.github.com/SVI/GeoAvalanche.html#/overview](http://geoavalanche.github.com/SVI/GeoAvalanche.html#/overview)

@@ -1,0 +1,838 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!-- saved from url=(0033)http://geoavalanche.org/incident/ -->
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<title>Crowdsourced Snow Avalanche Information</title>
+	
+	<link href="css" rel="stylesheet" type="text/css">
+	<link rel="stylesheet" type="text/css" href="jquery-ui-themeroller.css">
+<link rel="stylesheet" type="text/css" href="style.css">
+<link rel="stylesheet" type="text/css" href="_default.css">
+<!--[if lte IE 7]><link rel="stylesheet" type="text/css" href="http://geoavalanche.org/incident/media/css/iehacks.css" />
+<![endif]--><!--[if IE 7]><link rel="stylesheet" type="text/css" href="http://geoavalanche.org/incident/media/css/ie7hacks.css" />
+<![endif]--><!--[if IE 6]><link rel="stylesheet" type="text/css" href="http://geoavalanche.org/incident/media/css/ie6hacks.css" />
+<![endif]--><link rel="stylesheet" type="text/css" href="openlayers.css">
+<link rel="stylesheet" type="text/css" href="global.css">
+<link rel="stylesheet" type="text/css" href="jquery.jqplot.min.css">
+<link rel="alternate" type="application/rss+xml" href="http://geoavalanche.org/incident/feed/" title="RSS2"><script type="text/javascript" src="OpenLayers.js"></script>
+<script type="text/javascript">OpenLayers.ImgPath = 'http://geoavalanche.org/incident/media/img/openlayers/';</script><script type="text/javascript" src="ushahidi.js"></script>
+<script type="text/javascript" src="jquery.js"></script>
+<script type="text/javascript" src="jquery-ui.min.js"></script>
+<script type="text/javascript" src="jquery.pngFix.pack.js"></script>
+<script type="text/javascript" src="jquery.timeago.js"></script>
+<script type="text/javascript" src="cloudmade.js"></script><script type="text/javascript" src="selectToUISlider.jQuery.js"></script>
+<script type="text/javascript" src="jquery.jqplot.min.js"></script>
+<script type="text/javascript" src="jqplot.dateAxisRenderer.min.js"></script>
+<!--[if IE]><script type="text/javascript" src="http://geoavalanche.org/incident/media/js/excanvas.min.js"></script>
+<![endif]--><script type="text/javascript" src="global.js"></script>
+<script type="text/javascript">
+//<![CDATA[
+$(function() { $(document).pngFix(); });
+
+// Initialize the Ushahidi namespace
+Ushahidi.baseUrl = "http://geoavalanche.org/incident/";
+Ushahidi.markerRadius = 4;
+Ushahidi.markerOpacity = 0.8;
+Ushahidi.markerStokeWidth = 2;
+Ushahidi.markerStrokeOpacity = 0.3;
+
+// Default to most active month
+var startTime = 1301616000;
+
+// Default to most active month
+var endTime = 1359676799;
+
+// To hold the Ushahidi.Map reference
+var map = null;
+
+
+/**
+ * Toggle Layer Switchers
+ */
+function toggleLayer(link, layer) {
+	if ($("#"+link).text() == "Show")
+	{
+		$("#"+link).text("Hide");
+	}
+	else
+	{
+		$("#"+link).text("Show");
+	}
+	$('#'+layer).toggle(500);
+}
+
+/**
+ * Create a function that calculates the smart columns
+ */
+function smartColumns() {
+	//Reset column size to a 100% once view port has been adjusted
+	$("ul.content-column").css({ 'width' : "100%"});
+
+	//Get the width of row
+	var colWrap = $("ul.content-column").width();
+
+	// Find how many columns of 200px can fit per row / then round it down to a whole number
+	var colNum = 2;
+
+	// Get the width of the row and divide it by the number of columns it 
+	// can fit / then round it down to a whole number. This value will be
+	// the exact width of the re-adjusted column
+	var colFixed = Math.floor(colWrap / colNum);
+
+	// Set exact width of row in pixels instead of using % - Prevents
+	// cross-browser bugs that appear in certain view port resolutions.
+	$("ul.content-column").css({ 'width' : colWrap});
+
+	// Set exact width of the re-adjusted column	
+	$("ul.content-column li").css({ 'width' : colFixed});
+}
+
+/**
+ * Callback function for rendering the timeline
+ */
+function refreshTimeline() {
+
+	
+	var options = (arguments.length == 0) ? {} : arguments[0];
+
+	// Compute the start and end dates
+	var from = (options.s == undefined)
+	    ? new Date(startTime * 1000)
+	    : new Date(options.s * 1000);
+
+	var to = (options.e == undefined)
+	    ? new Date(endTime * 1000)
+	    : new Date(options.e * 1000);
+
+	var url = "http://geoavalanche.org/incident/json/timeline/";
+	url += (options.c !== undefined && parseInt(options.c) > 0) ?  options.c : '';
+
+	var interval = (to - from) / (1000 * 3600 * 24);
+	if (interval <= 3) {
+		options.i = "hour";
+	} else if (interval >= 124) {
+		options.i = "day";
+	}
+
+	// Get the graph data
+	$.ajax({
+		url: url,
+		data: options,
+		success: function(response) {
+			// Clear out the any existing plots
+			$("#graph").html('');
+
+			if (response != null && response[0].data.length < 2)
+				return;
+
+			var graphData = [];
+			var raw = response[0].data;
+			for (var i=0; i<raw.length; i++) {
+				var date = new Date(raw[i][0]);
+
+				var dateStr = date.getFullYear() + "-";
+				dateStr += (date.getMonth() < 10) ? "0" : "";
+				dateStr += (date.getMonth() +1) + "-" ;
+				dateStr += (date.getDate() < 10) ? "0" : "";
+				dateStr += date.getDate();
+
+				graphData.push([dateStr, parseInt(raw[i][1])]);
+			}
+			var timeline = $.jqplot('graph', [graphData], {
+				seriesDefaults: {
+					color: response[0].color,
+					lineWidth: 1.6,
+					markerOptions: {
+						show: false
+					}
+				},
+				axesDefaults: {
+					pad: 1.23,
+				},
+				axes: {
+					xaxis: {
+						renderer: $.jqplot.DateAxisRenderer,
+						tickOptions: {
+							formatString: '%#d&nbsp;%b\n%Y'
+						}
+					},
+					yaxis: {
+						min: 0,
+						tickOptions: {
+							formatString: '%.0f'
+						}
+					}
+				},
+				cursor: {show: false}
+			});
+		},
+		dataType: "json"
+	});
+	}
+
+
+jQuery(function() {
+	var reportsURL = "json/cluster";
+
+	// Render thee JavaScript for the base layers so that
+	// they are accessible by Ushahidi.js
+	var cloudmade = new OpenLayers.Layer.CloudMade("CloudMade", { 
+ key: "2c9aaf990ed9461691b72500453a9c4b",
+ styleId: "1155",
+ sphericalMercator: true,
+ maxExtent: new OpenLayers.Bounds(-20037508.34,-20037508.34,20037508.34,20037508.34)});
+
+	
+	// Map configuration
+	var config = {
+
+		// Zoom level at which to display the map
+		zoom: 2,
+
+		// Redraw the layers when the zoom level changes
+		redrawOnZoom: true,
+
+		// Center of the map
+		center: {
+			latitude: 45.002028104773,
+			longitude: 10.621415902102		},
+
+		// Map controls
+		mapControls: [
+			new OpenLayers.Control.Navigation({ dragPanOptions: { enableKinetic: true } }),
+			new OpenLayers.Control.Attribution(),
+			new OpenLayers.Control.Zoom(),
+			new OpenLayers.Control.MousePosition({
+				div: document.getElementById('mapMousePosition'),
+				numdigits: 5
+			}),
+			new OpenLayers.Control.Scale('mapScale'),
+			new OpenLayers.Control.ScaleLine(),
+			new OpenLayers.Control.LayerSwitcher()
+		],
+
+		// Base layers
+		baseLayers: [cloudmade],
+
+		// Display the map projection
+		showProjection: true
+
+	};
+
+	// Initialize the map
+	map = new Ushahidi.Map('map', config);
+	map.addLayer(Ushahidi.GEOJSON, {
+		name: "Reports",
+		url: reportsURL,
+		transform: false
+	}, true, true);
+
+
+	// Register the referesh timeline function as a callback
+	map.register("filterschanged", refreshTimeline);
+	setTimeout(function() { refreshTimeline(); }, 1500);
+
+
+	// Category Switch Action
+	$("ul#category_switch li > a").click(function(e) {
+		
+		var categoryId = this.id.substring(4);
+		var catSet = 'cat_' + this.id.substring(4);
+
+		// Remove All active
+		$("a[id^='cat_']").removeClass("active");
+		
+		// Hide All Children DIV
+		$("[id^='child_']").hide();
+
+		// Add Highlight
+		$("#cat_" + categoryId).addClass("active"); 
+
+		// Show children DIV
+		$("#child_" + categoryId).show();
+		$(this).parents("div").show();
+		
+		// Update report filters
+		map.updateReportFilters({c: categoryId});
+
+		e.stopPropagation();
+		return false;
+	});
+
+	// Layer selection
+	$("ul#kml_switch li > a").click(function(e) {
+		// Get the layer id
+		var layerId = this.id.substring(6);
+
+		var isCurrentLayer = false;
+		var context = this;
+
+		// Remove all actively selected layers
+		$("#kml_switch a").each(function(i) {
+			if ($(this).hasClass("active")) {
+				if (this.id == context.id) {
+					isCurrentLayer = true;
+				}
+				map.trigger("deletelayer", $(".layer-name", this).html());
+				$(this).removeClass("active");
+			}
+		});
+
+		// Was a different layer selected?
+		if (!isCurrentLayer) {
+			// Set the currently selected layer as the active one
+			$(this).addClass("active");
+			map.addLayer(Ushahidi.KML, {
+				name: $(".layer-name", this).html(),
+				url: "json/layer/" + layerId
+			});
+		}
+
+		return false;
+	});
+		
+	// Timeslider and date change actions
+	$("select#startDate, select#endDate").selectToUISlider({
+		labels: 4,
+		labelSrc: 'text',
+		sliderOptions: {
+			change: function(e, ui) {
+				var from = $("#startDate").val();
+				var to = $("#endDate").val();
+
+				if (to > from && (from != startTime || to != endTime)) {
+					// Update the report filters
+					startTime = from;
+					endTime = to;
+					map.updateReportFilters({s: from, e: to});
+				}
+
+				e.stopPropagation();
+			}
+		}
+	});
+	
+	// Media Filter Action
+	$('.filters li a').click(function() {
+		var mediaType = parseFloat(this.id.replace('media_', '')) || 0;
+		
+		$('.filters li a').attr('class', '');
+		$(this).addClass('active');
+
+		// Update the report filters
+		map.updateReportFilters({m: mediaType});
+		
+		return false;
+	});
+	
+	//Execute the function when page loads
+	smartColumns();
+
+	// Are checkins enabled?
+	
+});
+
+$(window).resize(function () { 
+	//Each time the viewport is adjusted/resized, execute the function
+	smartColumns();
+});
+//]]>
+</script>		</head>
+
+
+
+<body id="page" class="page-main">
+
+<div id="header_nav">
+	<ul id="header_nav_left">
+		<li><span class="bignext">»</span><a href="saved_resource.html">Crowdsourced Snow Avalanche Information</a></li>
+			</ul>
+
+	
+	<ul id="header_nav_right">
+		<li class="header_nav_user header_nav_has_dropdown">
+		
+			<a href="http://geoavalanche.org/incident/login" style="float:right;padding-top:8px;"><span class="header_nav_label"><strong>Login</strong></span></a>
+			
+			<div class="header_nav_dropdown" style="display:none;">
+			
+				<form action="http://geoavalanche.org/incident/login" method="post" id="userpass_form">
+				<input type="hidden" name="action" value="signin">
+	
+				<ul>
+					<li><label for="username">Email</label><input type="text" name="username" id="username" class=""></li>
+	
+					<li><label for="password">Password</label><input name="password" type="password" class="" id="password" size="20"></li>
+	
+					<li><input type="submit" name="submit" value="Login" class="header_nav_login_btn"></li>
+				</ul>
+				</form>
+				
+				<ul>
+	
+					<li><a href="http://geoavalanche.org/incident/login/?newaccount">Create an Account</a></li>
+	
+					<li><a href="http://geoavalanche.org/incident/#" id="header_nav_forgot" onclick="return false">Forgot your password?</a>
+						<form action="http://geoavalanche.org/incident/login" method="post" id="header_nav_userforgot_form">
+						<input type="hidden" name="action" value="forgot">
+						<label for="resetemail">Registered Email</label>
+						<input type="text" id="resetemail" name="resetemail" value="">
+	
+						<input type="submit" name="submit" value="Reset Password" class="header_nav_login_btn">
+						</form>
+	
+					</li>
+				</ul>
+			</div>
+
+				</li>
+	</ul>
+</div>
+  <!-- top bar-->
+  <div id="top-bar">
+    <!-- searchbox -->
+		<div id="searchbox">
+
+			<!-- languages -->
+			<div class="language-box"><form action="http://geoavalanche.org/incident/main" method="get">
+<select id="l" name="l" onchange="this.form.submit()">
+<option value="az_AZ">Azərbaycan dili (AZ)</option>
+<option value="id_ID">Bahasa Indonesia (ID)</option>
+<option value="bs_BA">Bosanski (BA)</option>
+<option value="ca_ES">Català (ES)</option>
+<option value="cy_GB">Cymraeg (GB)</option>
+<option value="de_DE">Deutsch (DE)</option>
+<option value="en_US" selected="selected">English (US)</option>
+<option value="es_AR">Español (AR)</option>
+<option value="fr_FR">Français (FR)</option>
+<option value="ga_IE">Gaeilge (IE)</option>
+<option value="hr">hrvatski</option>
+<option value="it_IT">Italiano (IT)</option>
+<option value="sw_KE">Kiswahili (KE)</option>
+<option value="ht_HT">Kreyòl ayisyen (HT)</option>
+<option value="lg">Luganda</option>
+<option value="hu_HU">Magyar (HU)</option>
+<option value="nl_NL">Nederlands (NL)</option>
+<option value="pl_PL">Polski (PL)</option>
+<option value="pt_BR">Português (BR)</option>
+<option value="pt_PT">Português (PT)</option>
+<option value="pr_US">pr (US)</option>
+<option value="ro_RO">română (RO)</option>
+<option value="sq_AL">Shqip (AL)</option>
+<option value="so">Soomaaliga, af Soomaali</option>
+<option value="sv_SE">Svenska (SE)</option>
+<option value="tr_TR">Türkçe (TR)</option>
+<option value="cs_CZ">česky, čeština (CZ)</option>
+<option value="el">Ελληνικά</option>
+<option value="bg_BG">Български (BG)</option>
+<option value="mk_MK">Македонски (MK)</option>
+<option value="ru_RU">Русский (RU)</option>
+<option value="sr">Српски</option>
+<option value="uk_UA">Українська (UA)</option>
+<option value="hy_AM">Հայերեն (AM)</option>
+<option value="he_IL">עברית (IL)</option>
+<option value="ur_PK">اردو (PK)</option>
+<option value="ar">العربية</option>
+<option value="ne_NP">नेपाली (NP)</option>
+<option value="hi_IN">हिन्दी, हिंदी (IN)</option>
+<option value="ka_GE">ქართული (GE)</option>
+<option value="km">ភាសាខ្មែរ</option>
+<option value="zh_CN">中文 (Zhōngwén), 汉语, 漢語 (CN)</option>
+<option value="zh_TW">中文 (Zhōngwén), 汉语, 漢語 (TW)</option>
+<option value="ja_JP">日本語 (にほんご／にっぽんご) (JP)</option>
+<option value="ko_KR">한국어 (韓國語), 조선말 (朝鮮語) (KR)</option>
+</select></form>
+</div>			<!-- / languages -->
+
+			<!-- searchform -->
+			<div class="search-form"><form action="http://geoavalanche.org/incident/search" method="get" id="search">
+<ul><li><input type="text" name="k" value="" class="text"></li><li><input type="submit" name="b" class="searchbtn" value="Search"></li></ul></form>
+</div>			<!-- / searchform -->
+
+	    </div>
+  </div>
+  <!-- / searchbox -->
+
+
+	<!-- wrapper -->
+	<div class="rapidxwpr floatholder">
+
+		<!-- header -->
+		<div id="header">
+
+			<!-- logo -->
+						<a href="saved_resource.html"><img src="banner_1343834221.png" alt="Crowdsourced Snow Avalanche Information"></a>
+						<!-- / logo -->
+
+			<!-- submit incident -->
+			<div class="submit-incident clearingfix"><a href="http://geoavalanche.org/incident/reports/submit">Submit a Report</a></div>			<!-- / submit incident -->
+
+			
+		</div>
+		<!-- / header -->
+         <!-- / header item for plugins -->
+        
+        			<div class="green-box">
+				<h3>Map of clustered snow avalanche information accordingly to relevant avalanche data</h3>
+			</div>
+		
+		<!-- main body -->
+		<div id="middle">
+			<div class="background layoutleft">
+
+				<!-- mainmenu -->
+				<div id="mainmenu" class="clearingfix">
+					<ul>
+						<li><a href="http://geoavalanche.org/incident/main" class="active">Home</a></li><li><a href="http://geoavalanche.org/incident/reports">Reports</a></li><li><a href="http://geoavalanche.org/incident/reports/submit">Submit a Report</a></li><li><a href="http://geoavalanche.org/incident/alerts">Get Alerts</a></li><li><a href="http://geoavalanche.org/incident/contact">Contact Us</a></li><li><a href="http://geoavalanche.org/incident/page/index/1">About</a></li><li><a href="http://geoavalanche.org/incident/page/index/2">Partners</a></li>					</ul>
+
+				</div>
+				<!-- / mainmenu -->
+<script type="text/javascript">
+$(function(){
+  
+  // show/hide report filters and layers boxes on home page map
+  $("a.toggle").toggle(
+    function() { 
+      $($(this).attr("href")).show();
+      $(this).addClass("active-toggle");
+    },
+    function() { 
+      $($(this).attr("href")).hide();
+      $(this).removeClass("active-toggle");
+    }
+  );
+  
+});
+
+</script>
+<!-- main body -->
+<div id="main" class="clearingfix">
+	<div id="mainmiddle">
+
+		<!-- right column -->
+		<div id="report-map-filter-box" class="clearingfix">
+	    <a class="btn toggle" id="filter-menu-toggle" href="http://geoavalanche.org/incident/#the-filters">Filter Reports By<span class="btn-icon ic-right">»</span></a>
+	    
+	    <!-- filters box -->
+	    <div id="the-filters" class="map-menu-box">
+	      
+        <!-- report category filters -->
+        <div id="report-category-filter">
+    			<h3>Category</h3>
+			
+    			<ul id="category_switch" class="category-filters">
+    										<li><a class="active" id="cat_0" href="http://geoavalanche.org/incident/#"><span class="swatch" style="background-color:#462dfc"></span><span class="category-title">All Categories</span></a></li>
+						<li><a href="http://geoavalanche.org/incident/#" id="cat_1001"><span class="swatch" style="background-color:#00c746"></span><span class="category-title">Snow depth</span></a><div class="hide" id="child_1001"></div></li><li><a href="http://geoavalanche.org/incident/#" id="cat_1002"><span class="swatch" style="background-color:#0004fc"></span><span class="category-title">Spontaneous avalanche</span></a><div class="hide" id="child_1002"></div></li><li><a href="http://geoavalanche.org/incident/#" id="cat_6"><span class="swatch" style="background-color:#729ae0"></span><span class="category-title">Avalanche Incidents</span></a><div class="hide" id="child_6"><ul><li style="padding-left:10px;"><a href="http://geoavalanche.org/incident/#" id="cat_999"><span><img src="category_999_1339703434.png" style="float:left;padding-right:5px;"></span><span class="category-title">DANGER VERY HIGH</span></a></li><li style="padding-left:10px;"><a href="http://geoavalanche.org/incident/#" id="cat_7"><span><img src="category_7_1339703448.png" style="float:left;padding-right:5px;"></span><span class="category-title">DANGER HIGH</span></a></li><li style="padding-left:10px;"><a href="http://geoavalanche.org/incident/#" id="cat_8"><span><img src="category_8_1339703462.png" style="float:left;padding-right:5px;"></span><span class="category-title">DANGER CONSIDERABLE</span></a></li><li style="padding-left:10px;"><a href="http://geoavalanche.org/incident/#" id="cat_9"><span><img src="category_9_1339703476.png" style="float:left;padding-right:5px;"></span><span class="category-title">DANGER MODERATE</span></a></li><li style="padding-left:10px;"><a href="http://geoavalanche.org/incident/#" id="cat_10"><span><img src="category_10_1339703486.png" style="float:left;padding-right:5px;"></span><span class="category-title">DANGER LOW</span></a></li></ul></div></li><li><a href="http://geoavalanche.org/incident/#" id="cat_1000"><span class="swatch" style="background-color:#fc0000"></span><span class="category-title">Snow conditions</span></a><div class="hide" id="child_1000"></div></li><li><a href="http://geoavalanche.org/incident/#" id="cat_4"><span class="swatch" style="background-color:#021542"></span><span class="category-title">Trusted Reports</span></a><div class="hide" id="child_4"></div></li>    			</ul>
+
+			  </div>
+			  <!-- / report category filters -->
+			  
+  			<!-- report type filters -->
+  			<div id="report-type-filter" class="filters">
+  				<h3>Type</h3>
+  					<ul>
+  						<li><a id="media_0" class="active" href="http://geoavalanche.org/incident/#"><span>Reports</span></a></li>
+  						<li><a id="media_4" href="http://geoavalanche.org/incident/#"><span>News</span></a></li>
+  						<li><a id="media_1" href="http://geoavalanche.org/incident/#"><span>Pictures</span></a></li>
+  						<li><a id="media_2" href="http://geoavalanche.org/incident/#"><span>Video</span></a></li>
+  						<li><a id="media_0" href="http://geoavalanche.org/incident/#"><span>All</span></a></li>
+  					</ul>
+  					<div class="floatbox">
+      					      				</div>
+      				<!-- / report type filters -->
+  			</div>
+      			
+			</div>
+			<!-- / filters box -->
+			
+						
+			
+						
+			
+			<!-- additional content -->
+							<a class="btn toggle" id="how-to-report-menu-toggle" href="http://geoavalanche.org/incident/#how-to-report-box">How to Report <span class="btn-icon ic-question">»</span></a>
+				<div id="how-to-report-box" class="map-menu-box">
+					
+					<div>
+
+						<!-- Phone -->
+												
+						<!-- External Apps -->
+												<div style="margin-bottom:10px;">
+							<strong>By using an app:</strong><br>
+															<a href="http://download.ushahidi.com/track_download.php?download=ios">iPhone</a><br>
+															<a href="http://download.ushahidi.com/track_download.php?download=android">Android</a><br>
+													</div>
+						
+						<!-- Email -->
+												<div style="margin-bottom:10px;">
+							<strong>By sending an email:</strong><br>
+							<a href="mailto:info@geoavalanche.org">info@geoavalanche.org</a>
+						</div>
+						
+						<!-- Twitter -->
+												<div style="margin-bottom:10px;">
+							<strong>By sending a tweet with the hashtag/s:</strong><br>
+															<span>#avalevent</span>
+																	<br>
+																							<span>#avalreport</span>
+																	<br>
+																							<span>#geoavalanche</span>
+																	<br>
+																							<span>#infovalanghe</span>
+																	<br>
+																							<span>#avalanche</span>
+																					</div>
+						
+						<!-- Web Form -->
+						<div style="margin-bottom:10px;">
+							<a href="http://geoavalanche.org/incident/reports/submit/">By filling this form on our website.</a>
+						</div>
+
+					</div>
+
+				</div>
+						<!-- / additional content -->
+		</div>
+		<!-- / right column -->
+
+		<!-- content column -->
+		<div id="content" class="clearingfix">
+				<!-- map -->
+<div class="map olMap" id="map"><div id="OpenLayers_Map_11_OpenLayers_ViewPort" style="position: relative; overflow: hidden; width: 100%; height: 100%;" class="olMapViewport olControlDragPanActive olControlZoomBoxActive olControlNavigationActive olControlMousePositionActive olControlSelectFeatureActive"><div id="OpenLayers_Map_11_OpenLayers_Container" style="position: absolute; z-index: 749; left: 0px; top: 0px;"><div id="OpenLayers_Layer_CloudMade_2" style="position: absolute; width: 100%; height: 100%; z-index: 100;" dir="ltr" class="olLayerDiv olLayerGrid"><img class="olTileImage" style="visibility: inherit; opacity: 1; position: absolute; left: 439px; top: 71px; width: 256px; height: 256px;" src="1.png"><img class="olTileImage" style="visibility: inherit; opacity: 1; position: absolute; left: 183px; top: 71px; width: 256px; height: 256px;" src="1(1).png"><img class="olTileImage" style="visibility: inherit; opacity: 1; position: absolute; left: 439px; top: -185px; width: 256px; height: 256px;" src="0.png"><img class="olTileImage" style="visibility: inherit; opacity: 1; position: absolute; left: 183px; top: -185px; width: 256px; height: 256px;" src="0(1).png"><img class="olTileImage" style="visibility: inherit; opacity: 1; position: absolute; left: 439px; top: 327px; width: 256px; height: 256px;" src="2.png"><img class="olTileImage" style="visibility: inherit; opacity: 1; position: absolute; left: 183px; top: 327px; width: 256px; height: 256px;" src="2(1).png"><img class="olTileImage" style="visibility: inherit; opacity: 1; position: absolute; left: 695px; top: 71px; width: 256px; height: 256px;" src="1(2).png"><img class="olTileImage" style="visibility: inherit; opacity: 1; position: absolute; left: -73px; top: 71px; width: 256px; height: 256px;" src="1(3).png"><img class="olTileImage" style="visibility: inherit; opacity: 1; position: absolute; left: 695px; top: -185px; width: 256px; height: 256px;" src="0(2).png"><img class="olTileImage" style="visibility: inherit; opacity: 1; position: absolute; left: 695px; top: 327px; width: 256px; height: 256px;" src="2(2).png"><img class="olTileImage" style="visibility: inherit; opacity: 1; position: absolute; left: -73px; top: -185px; width: 256px; height: 256px;" src="0(3).png"><img class="olTileImage" style="visibility: inherit; opacity: 1; position: absolute; left: -73px; top: 327px; width: 256px; height: 256px;" src="2(3).png"><img class="olTileImage" style="visibility: inherit; opacity: 1; position: absolute; left: 951px; top: 71px; width: 256px; height: 256px;" src="1(3).png"><img class="olTileImage" style="visibility: inherit; opacity: 1; position: absolute; left: 951px; top: -185px; width: 256px; height: 256px;" src="0(3).png"><img class="olTileImage" style="visibility: inherit; opacity: 1; position: absolute; left: 951px; top: 327px; width: 256px; height: 256px;" src="2(3).png"></div><div id="OpenLayers_Layer_Vector_45" style="position: absolute; width: 100%; height: 100%; opacity: 1; z-index: 335; left: 0px; top: 0px;" dir="ltr" class="olLayerDiv olVectorLayerDiv"><svg id="OpenLayers_Layer_Vector_45_svgRoot" style="display: block;" width="938" height="366" viewBox="0 0 938 366"></svg></div><div id="OpenLayers_Layer_Vector_RootContainer_89" style="position: absolute; width: 100%; height: 100%; z-index: 725; left: 0px; top: 0px;" dir="ltr" class="olLayerDiv"><svg id="OpenLayers_Layer_Vector_RootContainer_89_svgRoot" style="display: block;" width="938" height="366" viewBox="0 0 938 366"><g id="OpenLayers_Layer_Vector_RootContainer_89_root" style="visibility: visible;" transform=""><g id="OpenLayers_Layer_Vector_RootContainer_89_vroot"></g><g id="OpenLayers_Layer_Vector_RootContainer_89_troot"></g></g><g id="OpenLayers_Layer_Vector_45_root" style="visibility: visible;" transform=""><g id="OpenLayers_Layer_Vector_45_vroot"><circle id="OpenLayers_Geometry_Point_62" cx="464.96457897460033" cy="179.21466334159103" r="20" title="undefined" style="" fill="#462dfc" fill-opacity="0.8" stroke="#462dfc" stroke-opacity="0.3" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"><title>undefined</title></circle><circle id="OpenLayers_Geometry_Point_64" cx="100.52473801416784" cy="190.616406079375" r="20" title="undefined" style="" fill="#462dfc" fill-opacity="0.8" stroke="#462dfc" stroke-opacity="0.3" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"><title>undefined</title></circle><circle id="OpenLayers_Geometry_Point_66" cx="134.44804688239515" cy="207.2269359533182" r="12" title="undefined" style="" fill="#462dfc" fill-opacity="0.8" stroke="#462dfc" stroke-opacity="0.3" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"><title>undefined</title></circle><circle id="OpenLayers_Geometry_Point_68" cx="659.051937471239" cy="224.4572374373194" r="12" title="undefined" style="" fill="#462dfc" fill-opacity="0.8" stroke="#462dfc" stroke-opacity="0.3" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"><title>undefined</title></circle><circle id="OpenLayers_Geometry_Point_70" cx="15.47981110480265" cy="103.45683863622219" r="12" title="undefined" style="" fill="#462dfc" fill-opacity="0.8" stroke="#462dfc" stroke-opacity="0.3" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"><title>undefined</title></circle><circle id="OpenLayers_Geometry_Point_72" cx="207.9897417791553" cy="183.08074990539353" r="12" title="undefined" style="" fill="#462dfc" fill-opacity="0.8" stroke="#462dfc" stroke-opacity="0.3" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"><title>undefined</title></circle><circle id="OpenLayers_Geometry_Point_74" cx="497.4400244573783" cy="46.084847653780514" r="8" title="undefined" style="" fill="#462dfc" fill-opacity="0.8" stroke="#462dfc" stroke-opacity="0.3" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><title>undefined</title></circle><circle id="OpenLayers_Geometry_Point_76" cx="687.0394214427258" cy="248.20517803373934" r="8" title="undefined" style="" fill="#462dfc" fill-opacity="0.8" stroke="#462dfc" stroke-opacity="0.3" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><title>undefined</title></circle><circle id="OpenLayers_Geometry_Point_80" cx="424.4804169877987" cy="130.21987717376143" r="8" title="undefined" style="" fill="#462dfc" fill-opacity="0.8" stroke="#462dfc" stroke-opacity="0.3" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><title>undefined</title></circle></g><g id="OpenLayers_Layer_Vector_45_troot"><text id="OpenLayers_Feature_Vector_63_label" x="464.96457897460033" y="179.21466334159103" fill="#ffffff" font-size="12px" font-weight="bold" pointer-events="none" text-anchor="middle"><tspan id="OpenLayers_Feature_Vector_63_label_tspan_0" baseline-shift="-35%" x="464.96457897460033" dy="0em">96</tspan></text><text id="OpenLayers_Feature_Vector_65_label" x="100.52473801416784" y="190.616406079375" fill="#ffffff" font-size="12px" font-weight="bold" pointer-events="none" text-anchor="middle"><tspan id="OpenLayers_Feature_Vector_65_label_tspan_0" baseline-shift="-35%" x="100.52473801416784" dy="0em">39</tspan></text><text id="OpenLayers_Feature_Vector_67_label" x="134.44804688239515" y="207.2269359533182" fill="#ffffff" font-size="10px" font-weight="bold" pointer-events="none" text-anchor="middle"><tspan id="OpenLayers_Feature_Vector_67_label_tspan_0" baseline-shift="-35%" x="134.44804688239515" dy="0em">9</tspan></text><text id="OpenLayers_Feature_Vector_69_label" x="659.051937471239" y="224.4572374373194" fill="#ffffff" font-size="10px" font-weight="bold" pointer-events="none" text-anchor="middle"><tspan id="OpenLayers_Feature_Vector_69_label_tspan_0" baseline-shift="-35%" x="659.051937471239" dy="0em">6</tspan></text><text id="OpenLayers_Feature_Vector_71_label" x="15.47981110480265" y="103.45683863622219" fill="#ffffff" font-size="10px" font-weight="bold" pointer-events="none" text-anchor="middle"><tspan id="OpenLayers_Feature_Vector_71_label_tspan_0" baseline-shift="-35%" x="15.47981110480265" dy="0em">4</tspan></text><text id="OpenLayers_Feature_Vector_73_label" x="207.9897417791553" y="183.08074990539353" fill="#ffffff" font-size="10px" font-weight="bold" pointer-events="none" text-anchor="middle"><tspan id="OpenLayers_Feature_Vector_73_label_tspan_0" baseline-shift="-35%" x="207.9897417791553" dy="0em">2</tspan></text></g></g></svg></div></div><div id="OpenLayers_Control_Attribution_5" style="position: absolute; z-index: 1007;" class="olControlAttribution olControlNoSelect" unselectable="on">Data © 2009 <a href="http://openstreetmap.org/">OpenStreetMap</a>. Rendering © 2009 <a href="http://cloudmade.com/">CloudMade</a>.</div><div id="OpenLayers_Control_Zoom_6" style="position: absolute; z-index: 1007;" class="olControlZoom olControlNoSelect" unselectable="on"><a href="http://geoavalanche.org/incident/#zoomIn" class="olControlZoomIn olButton">+</a><a href="http://geoavalanche.org/incident/#zoomOut" class="olControlZoomOut olButton">−</a></div><div id="OpenLayers_Control_Scale_8" style="position: absolute; z-index: 1007;" class="olControlScale olControlNoSelect" unselectable="on"></div><div id="OpenLayers_Control_ScaleLine_9" style="position: absolute; z-index: 1007;" class="olControlScaleLine olControlNoSelect" unselectable="on"><div class="olControlScaleLineTop" style="visibility: visible; width: 51px;">2000 km</div><div class="olControlScaleLineBottom" style="visibility: visible; width: 41px;">1000 mi</div></div><div id="OpenLayers_Control_LayerSwitcher_10" style="position: absolute; width: 0px; height: 0px; z-index: 1007;" class="olControlLayerSwitcher olControlNoSelect" unselectable="on"><div id="OpenLayers_Control_LayerSwitcher_10_layersDiv" class="layersDiv" style="display: none;"><div class="baseLbl" style="">Base Layer</div><div class="baseLayersDiv"><input id="OpenLayers_Control_LayerSwitcher_10_input_CloudMade" name="OpenLayers_Control_LayerSwitcher_10_baseLayers" type="radio" value="CloudMade" checked="" class="olButton"><label class="labelSpan olButton" style="vertical-align: bottom;">CloudMade</label><br></div><div class="dataLbl" style="">Overlays</div><div class="dataLayersDiv"><input id="OpenLayers_Control_LayerSwitcher_10_input_Reports" name="Reports" type="checkbox" value="Reports" checked="" class="olButton"><label class="labelSpan olButton" style="vertical-align: baseline;">Reports</label><br></div></div><div id="OpenLayers_Control_MaximizeDiv" style="position: absolute;" class="maximizeDiv olButton"><img id="OpenLayers_Control_MaximizeDiv_innerImage" style="position: relative;" class="olAlphaImg" src="layer-switcher-maximize.png"></div><div id="OpenLayers_Control_MinimizeDiv" style="position: absolute; display: none;" class="minimizeDiv olButton"><img id="OpenLayers_Control_MinimizeDiv_innerImage" style="position: relative;" class="olAlphaImg" src="layer-switcher-minimize.png"></div></div><div id="OpenLayers_Control_SelectFeature_88" style="position: absolute; z-index: 1008;" class="olControlSelectFeature olControlNoSelect" unselectable="on"></div></div></div>
+<div style="clear:both;"></div>
+<div id="mapStatus">
+	<div id="mapScale" style="border-right: solid 1px #999">Scale = 1 : 111M</div>
+	<div id="mapMousePosition" style="min-width: 135px;border-right: solid 1px #999;text-align: center"></div>
+	<div id="mapProjection" style="border-right: solid 1px #999"></div>
+	<div id="mapOutput"></div>
+</div>
+<div style="clear:both;"></div>
+<!-- / map --><div class="slider-holder">
+	<form action="http://geoavalanche.org/incident/main" method="get">
+		<input type="hidden" value="0" name="currentCat" id="currentCat">
+		<fieldset>
+			<label for="startDate" id="label_handle_startDate">From:</label>
+			<select name="startDate" id="startDate"><optgroup label="2011"><option value="1301616000" selected="selected">Apr 2011</option><option value="1304208000">May 2011</option><option value="1306886400">Jun 2011</option><option value="1309478400">Jul 2011</option><option value="1312156800">Aug 2011</option><option value="1314835200">Sep 2011</option><option value="1317427200">Oct 2011</option><option value="1320105600">Nov 2011</option><option value="1322697600">Dec 2011</option></optgroup><optgroup label="2012"><option value="1325376000">Jan 2012</option><option value="1328054400">Feb 2012</option><option value="1330560000">Mar 2012</option><option value="1333238400">Apr 2012</option><option value="1335830400">May 2012</option><option value="1338508800">Jun 2012</option><option value="1341100800">Jul 2012</option><option value="1343779200">Aug 2012</option><option value="1346457600">Sep 2012</option><option value="1349049600">Oct 2012</option><option value="1351728000">Nov 2012</option><option value="1354320000">Dec 2012</option></optgroup><optgroup label="2013"><option value="1356998400">Jan 2013</option></optgroup></select>
+			<label for="endDate" id="label_handle_endDate">to:</label>
+			<select name="endDate" id="endDate"><optgroup label="2011"><option value="1304207999">Apr 2011</option><option value="1306886399">May 2011</option><option value="1309478399">Jun 2011</option><option value="1312156799">Jul 2011</option><option value="1314835199">Aug 2011</option><option value="1317427199">Sep 2011</option><option value="1320105599">Oct 2011</option><option value="1322697599">Nov 2011</option><option value="1325375999">Dec 2011</option></optgroup><optgroup label="2012"><option value="1328054399">Jan 2012</option><option value="1330473599">Feb 2012</option><option value="1333238399">Mar 2012</option><option value="1335830399">Apr 2012</option><option value="1338508799">May 2012</option><option value="1341100799">Jun 2012</option><option value="1343779199">Jul 2012</option><option value="1346457599">Aug 2012</option><option value="1349049599">Sep 2012</option><option value="1351727999">Oct 2012</option><option value="1354319999">Nov 2012</option><option value="1356998399">Dec 2012</option></optgroup><optgroup label="2013"><option value="1359676799" selected="selected">Jan 2013</option></optgroup></select><div class="ui-slider ui-slider-horizontal ui-widget ui-widget-content ui-corner-all" role="application"><a href="http://geoavalanche.org/incident/#" tabindex="0" id="handle_startDate" class="ui-slider-handle ui-state-default ui-corner-all" role="slider" aria-labelledby="label_handle_startDate" aria-valuemin="0" aria-valuemax="21" aria-valuenow="0" aria-valuetext="Apr 2011" style="left: 0%;"><span class="screenReaderContext">Slider control for From:</span><span class="ui-slider-tooltip ui-widget-content ui-corner-all"><span class="ttContent">Apr 2011</span><span class="ui-tooltip-pointer-down ui-widget-content"><span class="ui-tooltip-pointer-down-inner" style="border-top-width: 7px; border-top-style: solid; border-top-color: rgb(255, 255, 255);"></span></span></span></a><a href="http://geoavalanche.org/incident/#" tabindex="0" id="handle_endDate" class="ui-slider-handle ui-state-default ui-corner-all" role="slider" aria-labelledby="label_handle_endDate" aria-valuemin="0" aria-valuemax="21" aria-valuenow="21" aria-valuetext="Jan 2013" style="left: 100%;"><span class="screenReaderContext">Slider control for to:</span><span class="ui-slider-tooltip ui-widget-content ui-corner-all"><span class="ttContent">Jan 2013</span><span class="ui-tooltip-pointer-down ui-widget-content"><span class="ui-tooltip-pointer-down-inner" style="border-top-width: 7px; border-top-style: solid; border-top-color: rgb(255, 255, 255);"></span></span></span></a><dl class="ui-slider-scale ui-helper-reset" role="presentation"><dt style="width: 33.33%; left: 0%;"><span>2011</span></dt><dd style="left:0.00%"><span class="ui-slider-label ui-slider-label-show" style="margin-left: 0px;">Apr 2011</span><span class="ui-slider-tic ui-widget-content" style="display: none;"></span></dd><dd style="left:4.76%"><span class="ui-slider-label" style="margin-left: 0px;">May 2011</span><span class="ui-slider-tic ui-widget-content"></span></dd><dd style="left:9.52%"><span class="ui-slider-label" style="margin-left: 0px;">Jun 2011</span><span class="ui-slider-tic ui-widget-content"></span></dd><dd style="left:14.29%"><span class="ui-slider-label" style="margin-left: 0px;">Jul 2011</span><span class="ui-slider-tic ui-widget-content"></span></dd><dd style="left:19.05%"><span class="ui-slider-label" style="margin-left: 0px;">Aug 2011</span><span class="ui-slider-tic ui-widget-content"></span></dd><dd style="left:23.81%"><span class="ui-slider-label" style="margin-left: 0px;">Sep 2011</span><span class="ui-slider-tic ui-widget-content"></span></dd><dd style="left:28.57%"><span class="ui-slider-label ui-slider-label-show" style="margin-left: 0px;">Oct 2011</span><span class="ui-slider-tic ui-widget-content"></span></dd><dd style="left:33.33%"><span class="ui-slider-label" style="margin-left: 0px;">Nov 2011</span><span class="ui-slider-tic ui-widget-content"></span></dd><dd style="left:38.10%"><span class="ui-slider-label" style="margin-left: 0px;">Dec 2011</span><span class="ui-slider-tic ui-widget-content"></span></dd><dt style="width: 33.33%; left: 33.33%;"><span>2012</span></dt><dd style="left:42.86%"><span class="ui-slider-label" style="margin-left: 0px;">Jan 2012</span><span class="ui-slider-tic ui-widget-content"></span></dd><dd style="left:47.62%"><span class="ui-slider-label" style="margin-left: 0px;">Feb 2012</span><span class="ui-slider-tic ui-widget-content"></span></dd><dd style="left:52.38%"><span class="ui-slider-label" style="margin-left: 0px;">Mar 2012</span><span class="ui-slider-tic ui-widget-content"></span></dd><dd style="left:57.14%"><span class="ui-slider-label ui-slider-label-show" style="margin-left: 0px;">Apr 2012</span><span class="ui-slider-tic ui-widget-content"></span></dd><dd style="left:61.90%"><span class="ui-slider-label" style="margin-left: 0px;">May 2012</span><span class="ui-slider-tic ui-widget-content"></span></dd><dd style="left:66.67%"><span class="ui-slider-label" style="margin-left: 0px;">Jun 2012</span><span class="ui-slider-tic ui-widget-content"></span></dd><dd style="left:71.43%"><span class="ui-slider-label" style="margin-left: 0px;">Jul 2012</span><span class="ui-slider-tic ui-widget-content"></span></dd><dd style="left:76.19%"><span class="ui-slider-label" style="margin-left: 0px;">Aug 2012</span><span class="ui-slider-tic ui-widget-content"></span></dd><dd style="left:80.95%"><span class="ui-slider-label" style="margin-left: 0px;">Sep 2012</span><span class="ui-slider-tic ui-widget-content"></span></dd><dd style="left:85.71%"><span class="ui-slider-label" style="margin-left: 0px;">Oct 2012</span><span class="ui-slider-tic ui-widget-content"></span></dd><dd style="left:90.48%"><span class="ui-slider-label" style="margin-left: 0px;">Nov 2012</span><span class="ui-slider-tic ui-widget-content"></span></dd><dd style="left:95.24%"><span class="ui-slider-label" style="margin-left: 0px;">Dec 2012</span><span class="ui-slider-tic ui-widget-content"></span></dd><dt style="width: 33.33%; left: 66.67%;"><span>2013</span></dt><dd style="left:100.00%"><span class="ui-slider-label ui-slider-label-show" style="margin-left: 0px;">Jan 2013</span><span class="ui-slider-tic ui-widget-content" style="display: none;"></span></dd></dl><div class="ui-slider-range ui-widget-header" style="left: 0%; width: 100%;"></div></div>
+		</fieldset>
+	</form>
+</div>
+<div id="graph" class="graph-holder jqplot-target" style="position: relative;"></div>			</div>
+		</div>
+		<!-- / content column -->
+
+	</div>
+</div>
+<!-- / main body -->
+
+<!-- content -->
+<div class="content-container">
+
+	<!-- content blocks -->
+	<div class="content-blocks clearingfix">
+		<ul class="content-column" style="width: 940px;">
+			<li id="block-reports" style="width: 470px;"><div class="content-block"><h5>Reports <span>(from the map, listed in chronological order)</span></h5><table class="table-list">
+	<thead>
+		<tr>
+			<th scope="col" class="title">Title </th>
+			<th scope="col" class="location">Location</th>
+			<th scope="col" class="date">Date</th>
+		</tr>
+	</thead>
+	<tbody>
+				<tr>
+			<td><a href="http://geoavalanche.org/incident/reports/view/226"> Unofficial snow avalanche condition from...</a></td>
+			<td>Chamonix, France</td>
+			<td>Jan 31 2013</td>
+		</tr>
+				<tr>
+			<td><a href="http://geoavalanche.org/incident/reports/view/225"> Piccola valanga a lastroni</a></td>
+			<td>Via Fontanelle, 55030 Metello Province of Lucca, Italy</td>
+			<td>Jan 30 2013</td>
+		</tr>
+				<tr>
+			<td><a href="http://geoavalanche.org/incident/reports/view/228"> Natural slide on Monitor Peak</a></td>
+			<td>Monitor Peak, Toiyabe National Forest, Nevada 89045, USA</td>
+			<td>Jan 30 2013</td>
+		</tr>
+				<tr>
+			<td><a href="http://geoavalanche.org/incident/reports/view/227"> Two climbers killed by avalanche near the...</a></td>
+			<td>Grand Armet, 38350 Chantelouve, France</td>
+			<td>Jan 30 2013</td>
+		</tr>
+				<tr>
+			<td><a href="http://geoavalanche.org/incident/reports/view/220"> Mountaineering skier dies in Fribourg Alps</a></td>
+			<td>Teysachaux, 1623 Châtel-Saint-Denis, Switzerland</td>
+			<td>Jan 29 2013</td>
+		</tr>
+				<tr>
+			<td><a href="http://geoavalanche.org/incident/reports/view/224"> L’avalanche s’arrête près d’une piste</a></td>
+			<td>Saint-François-Longchamp, France</td>
+			<td>Jan 28 2013</td>
+		</tr>
+				<tr>
+			<td><a href="http://geoavalanche.org/incident/reports/view/222"> Avalanche swept skiers against trees near...</a></td>
+			<td>Clause Peak, Teton National Forest, Wyoming 83001, USA</td>
+			<td>Jan 27 2013</td>
+		</tr>
+				<tr>
+			<td><a href="http://geoavalanche.org/incident/reports/view/221"> Avalanche swept skier against trees at Grand...</a></td>
+			<td>Survey Peak, Targhee National Forest, Wyoming 83414, USA</td>
+			<td>Jan 27 2013</td>
+		</tr>
+				<tr>
+			<td><a href="http://geoavalanche.org/incident/reports/view/223"> Aulon coupé du monde après deux avalanches</a></td>
+			<td>Aulon, France</td>
+			<td>Jan 26 2013</td>
+		</tr>
+				<tr>
+			<td><a href="http://geoavalanche.org/incident/reports/view/194"> Travolti cinque scialpinisti sul Monte Rotondo:...</a></td>
+			<td>Monte Rotondo, Parco Nazionale dei Monti Sibillini, 62039 Pieve Province of Macerata, Italy</td>
+			<td>Jan 26 2013</td>
+		</tr>
+			</tbody>
+</table>
+<a class="more" href="http://geoavalanche.org/incident/reports/">View More</a>
+<div style="clear:both;"></div>
+</div></li><li id="block-news" style="width: 470px;"><div class="content-block"><h5>Official &amp; mainstream news</h5><table class="table-list">
+	<thead>
+		<tr>
+			<th scope="col">Title </th>
+			<th scope="col">Source</th>
+			<th scope="col">Date</th>
+		</tr>
+	</thead>
+	<tbody>
+					<tr>
+				<td><a href="http://snowpassion.lastampa.it/news/winter-x-games-aspen-usa-shaun-white-half-pipe-mark-mcmorris-vince-slopestyle-1889400" target="_blank">Winter X Games Aspen (USA): a Shaun White...</a></td>
+				<td>snowpassion</td>
+				<td>Jan 31 2013</td>
+			</tr>
+						<tr>
+				<td><a href="http://www.montagna.tv/cms/?p=45435" target="_blank">Musica e sci, 4 concerti sulla neve con...</a></td>
+				<td>montagna.tv</td>
+				<td>Jan 31 2013</td>
+			</tr>
+						<tr>
+				<td><a href="http://www.montagna.tv/cms/?p=45427" target="_blank">Trentino, chiesto allontanamento forzato...</a></td>
+				<td>montagna.tv</td>
+				<td>Jan 31 2013</td>
+			</tr>
+						<tr>
+				<td><a href="http://snowpassion.lastampa.it/news/scialpinistica-pizzo-tre-signori-patria-giir-mont-assegnano-tricolori-giovanili-2013-skialp-188" target="_blank">Scialpinistica Pizzo Tre Signori: nella...</a></td>
+				<td>snowpassion</td>
+				<td>Jan 31 2013</td>
+			</tr>
+						<tr>
+				<td><a href="http://www.montagna.tv/cms/?p=45408" target="_blank">Exposed to dreams. Simone Moro: questo film...</a></td>
+				<td>montagna.tv</td>
+				<td>Jan 31 2013</td>
+			</tr>
+						<tr>
+				<td><a href="http://www.montagna.tv/cms/?p=45400" target="_blank">Il Cai e gli ambientalisti lanciano un Diario...</a></td>
+				<td>montagna.tv</td>
+				<td>Jan 31 2013</td>
+			</tr>
+						<tr>
+				<td><a href="http://www.montagna.tv/cms/?p=45413" target="_blank">Lonnie Dupre rinuncia al McKinley in invernale</a></td>
+				<td>montagna.tv</td>
+				<td>Jan 31 2013</td>
+			</tr>
+						<tr>
+				<td><a href="http://snowpassion.lastampa.it/video/highlights-winter-x-games-aspen-usa" target="_blank">Highlights Winter X Games Aspen (USA)</a></td>
+				<td>snowpassion</td>
+				<td>Jan 30 2013</td>
+			</tr>
+						<tr>
+				<td><a href="http://snowpassion.lastampa.it/news/sciando-stelle-prato-nevoso-10a-edizione-notturna-scialpinismo-sabato-23-febbraio-1888100" target="_blank">Sciando con le Stelle, a Prato Nevoso la...</a></td>
+				<td>snowpassion</td>
+				<td>Jan 30 2013</td>
+			</tr>
+						<tr>
+				<td><a href="http://www.montagna.tv/cms/?p=45404" target="_blank">Valtellina, domenica 3 febbraio la “Gusta...</a></td>
+				<td>montagna.tv</td>
+				<td>Jan 30 2013</td>
+			</tr>
+				</tbody>
+</table>
+<a class="more" href="http://geoavalanche.org/incident/feeds">View More</a>
+<div style="clear:both;"></div>
+</div></li>		</ul>
+	</div>
+	<!-- /content blocks -->
+
+</div>
+<!-- content -->
+			</div>
+		</div>
+		<!-- / main body -->
+
+	
+	<!-- / wrapper -->
+
+	<!-- footer -->
+	<div id="footer" class="clearingfix">
+
+		<div id="underfooter"></div>
+
+		<!-- footer content -->
+		<div class="rapidxwpr floatholder">
+
+			<!-- footer credits -->
+			<div class="footer-credits">
+				Powered by the &nbsp;
+				<a href="http://www.ushahidi.com/">
+					<img src="footer-logo.png" alt="Ushahidi" style="vertical-align:middle">
+				</a>
+				&nbsp; Platform
+			</div>
+			<!-- / footer credits -->
+
+			<!-- footer menu -->
+			<div class="footermenu">
+				<ul class="clearingfix">
+					<li>
+						<a class="item1" href="saved_resource.html">
+							Home						</a>
+					</li>
+
+										<li>
+						<a href="http://geoavalanche.org/incident/reports/submit">
+							Submit a Report						</a>
+					</li>
+					
+										<li>
+						<a href="http://geoavalanche.org/incident/alerts">
+							Get Alerts						</a>
+					</li>
+					
+										<li>
+						<a href="http://geoavalanche.org/incident/contact">
+							Contact Us						</a>
+					</li>
+					
+					
+				</ul>
+					      		<p><a rel="license" href="http://creativecommons.org/licenses/by/3.0/"></a></p><center><a rel="license" href="http://creativecommons.org/licenses/by/3.0/"><img align="center" alt="Creative Commons License" style="border-width:0" src="88x31.png"></a></center>
+<br>Crowdsourced avalanche data are licensed under <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/3.0/">CC-NC-BY-3.0 License of Creative Commons </a>- Either any kind of inappropriate or irresponsible use of this data is declined by Geoavalanche site.<p></p>
+		      				</div>
+			<!-- / footer menu -->
+
+
+			<h2 class="feedback_title" style="clear:both">
+				<a href="http://feedback.ushahidi.com/fillsurvey.php?sid=2">Provide Feedback</a>
+			</h2>
+
+
+		</div>
+		<!-- / footer content -->
+
+	</div>
+	<!-- / footer -->
+
+	
+
+
+
+</body></html>
